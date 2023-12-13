@@ -1,0 +1,35 @@
+name: Build deb file for llama-cpp
+on: [push]
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    container:
+      image: "nvidia/cuda:12.3.1-devel-ubuntu22.04"
+    steps:
+        - name: Checkout llama.cpp
+          uses: actions/checkout@master
+          with:
+            repository: ggerganov/llama.cpp
+        - name: Install compilation tools
+          run: apt-get update && apt-get install -y cmake build-essential
+        - name: Build llama-cpp cpu-only
+          run: mkdir build && cd build && cmake .. && cmake --build . --config Release
+        - name: Archive cpu-only binaries
+          run: tar -czvf /tmp/llamacpp-ubuntu-jammy-x86_64.tar.gz -C build/bin .
+        - name: Clean build files
+          run: rm -rf build
+        - name: Build llama-cpp with cuda
+          run: mkdir build && cd build && cmake .. -DLLAMA_CUBLAS=ON && cmake --build . --config Release
+        - name: Archive cuda binaries
+          run: tar -czvf /tmp/llamacpp-ubuntu-jammy-x86_64-cuda12.tar.gz -C build/bin .
+        - name: Get current date and time
+          run: echo "::set-output name=date::$(date +%Y%m%dT%H%M%S)"
+          id: datetime
+        - name: Release
+          uses: softprops/action-gh-release@v1
+          with:
+            files: |
+              /tmp/llamacpp-ubuntu-jammy-x86_64.tar.gz
+              /tmp/llamacpp-ubuntu-jammy-x86_64-cuda12.tar.gz
+            tag_name: ${{ steps.datetime.outputs.date }}
+
