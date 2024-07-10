@@ -6,7 +6,7 @@ jobs:
   build-release:
     runs-on: ubuntu-latest
     container:
-      image: "nvidia/cuda:12.3.1-devel-ubuntu22.04"
+      image: "nvidia/cuda:12.5.0-devel-ubuntu22.04"
     steps:
         - name: Checkout llama.cpp
           uses: actions/checkout@master
@@ -21,14 +21,14 @@ jobs:
         - name: Clean build files
           run: rm -rf build
         - name: Build llama-cpp with cuda
-          run: mkdir build && cd build && cmake .. -DLLAMA_CUBLAS=ON && cmake --build . --config Release
+          run: mkdir build && cd build && cmake .. -DGGML_CUBLAS=ON && cmake --build . --config Release
         - name: Archive cuda binaries
           run: tar -czvf /tmp/llamacpp-ubuntu-jammy-x86_64-cuda12.tar.gz -C build/bin .
         - name: Get current date and time
           run: echo "::set-output name=date::$(date +%Y%m%dT%H%M%S)"
           id: datetime
         - name: Release
-          uses: softprops/action-gh-release@v1
+          uses: softprops/action-gh-release@v2.0.6
           with:
             files: |
               /tmp/llamacpp-ubuntu-jammy-x86_64.tar.gz
