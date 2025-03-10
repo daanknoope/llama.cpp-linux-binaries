@@ -2,8 +2,12 @@ name: Build deb file for llama-cpp
 on:
   schedule:
     - cron: '00 10 * * 1'
+  push:
+    branches:
+      - master
+      - 'feature/**'
 jobs:
-  build-release:
+  build:
     runs-on: ubuntu-latest
     container:
       image: "nvidia/cuda:12.5.0-devel-ubuntu22.04"
@@ -25,13 +29,14 @@ jobs:
         - name: Archive cuda binaries
           run: tar -czvf /tmp/llamacpp-ubuntu-jammy-x86_64-cuda12.tar.gz -C build/bin .
         - name: Get current date and time
+          if: github.ref == 'refs/heads/master'
           run: echo "::set-output name=date::$(date +%Y%m%dT%H%M%S)"
           id: datetime
         - name: Release
+          if: github.ref == 'refs/heads/master'
           uses: softprops/action-gh-release@v2.0.6
           with:
             files: |
               /tmp/llamacpp-ubuntu-jammy-x86_64.tar.gz
               /tmp/llamacpp-ubuntu-jammy-x86_64-cuda12.tar.gz
             tag_name: ${{ steps.datetime.outputs.date }}
-
