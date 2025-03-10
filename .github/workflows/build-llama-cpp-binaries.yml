@@ -13,7 +13,7 @@ jobs:
           with:
             repository: ggerganov/llama.cpp
         - name: Install compilation tools
-          run: apt-get update && apt-get install -y cmake build-essential
+          run: apt-get update && apt-get install -y cmake build-essential ccache
         - name: Build llama-cpp cpu-only
           run: mkdir build && cd build && cmake .. && cmake --build . --config Release
         - name: Archive cpu-only binaries
